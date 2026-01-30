@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>Dahira Kenal - Connexion</title>
+	<meta name="description" content="Connexion Dahira Kenal - Système de Gestion">
+	<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+	<style>
+		:root{--green:#059669;--gold:#f59e0b;--dark:#0f1724;--bg:#f8fafc}
+		*{box-sizing:border-box}
+		body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg, #ecfdf5 0%, #ffffff 60%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+		.container{width:100%;max-width:920px;display:flex;gap:2rem;align-items:center;justify-content:center}
+		.panel{flex:1;background:linear-gradient(180deg, rgba(5,150,105,0.06), rgba(245,158,11,0.03));border-radius:14px;box-shadow:0 8px 30px rgba(2,6,23,0.08);padding:2.25rem;display:flex;flex-direction:column;gap:1rem}
+		.brand{display:flex;align-items:center;gap:1rem}
+		.logo{width:56px;height:56px;border-radius:10px;background:linear-gradient(135deg,var(--green),var(--gold));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:1.1rem}
+		h1{margin:0;font-size:1.25rem;color:var(--dark)}
+		p.lead{margin:0;color:#374151}
+		.form-wrap{background:white;padding:1.25rem;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.06);width:420px}
+		.form-group{display:flex;flex-direction:column;margin-bottom:0.75rem}
+		label{font-size:0.9rem;color:#374151;margin-bottom:0.35rem}
+		input[type="text"],input[type="password"]{padding:0.75rem 0.9rem;border:1px solid #e6edf0;border-radius:8px;font-size:1rem}
+		.btn{display:inline-flex;align-items:center;justify-content:center;padding:0.75rem 1rem;border-radius:10px;border:0;font-weight:700;cursor:pointer}
+		.btn-primary{background:linear-gradient(90deg,var(--green),#10b981);color:white;box-shadow:0 8px 20px rgba(5,150,105,0.12)}
+		.error{background:#fee2e2;color:#991b1b;padding:0.65rem;border-radius:8px;margin-bottom:0.5rem;font-weight:600}
+		.small{font-size:0.85rem;color:#6b7280}
+		.footer-note{font-size:0.85rem;color:#6b7280;margin-top:0.5rem}
+		@media(max-width:880px){.container{flex-direction:column;padding:1rem}.form-wrap{width:100%}}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="panel">
+			<div class="brand">
+				<div class="logo">DKST</div>
+				<div>
+					<h1>Dahira Kenal - Système de Gestion</h1>
+					<p class="lead">Accédez à l'administration de la Dahira</p>
+				</div>
+			</div>
+
+			<div style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start">
+				<div class="form-wrap" aria-labelledby="auth-title">
+					<h2 id="auth-title" style="margin-top:0;margin-bottom:0.75rem;color:#0f1724">Connexion</h2>
+					<div id="auth-error" style="display:none" class="error">⚠️ Erreur d'authentification</div>
+					<div id="register-fields" style="display:none">
+						<div class="form-group">
+							<label for="name">Nom complet</label>
+							<input id="name" type="text" placeholder="Votre nom complet">
+						</div>
+						<div class="form-group">
+							<label for="role">Rôle</label>
+							<select id="role">
+								<option value="Membre">Membre</option>
+								<option value="Admin">Admin</option>
+							</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="email">Email</label>
+						<input id="email" type="email" placeholder="votre.email@example.com">
+					</div>
+					<div class="form-group">
+						<label for="password">Mot de passe</label>
+						<input id="password" type="password" placeholder="Mot de passe">
+					</div>
+					<div style="display:flex;gap:0.5rem;align-items:center;margin-top:0.5rem;flex-wrap:wrap">
+						<button id="btn-auth" class="btn btn-primary">Se connecter</button>
+						<button id="btn-toggle" class="btn" style="background:#e6edf0;color:#374151"Disabled>Créer un compte</button>
+						<div class="small footer-note">Utilisez votre email pour accéder au système</div>
+					</div>
+				</div>
+
+				<div style="flex:1;min-width:220px;display:flex;flex-direction:column;gap:0.5rem;align-items:flex-start">
+					<div style="margin-top:auto" class="small">© Systeme reserver au membre de la Finance</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		// Firebase config
+		const firebaseConfig = {
+			apiKey: "AIzaSyBkcnXxfcw4TN3DSmtUeimJ5br7PuBpqVo",
+			authDomain: "dahira-kenal.firebaseapp.com",
+			databaseURL: "https://dahira-kenal-default-rtdb.firebaseio.com",
+			projectId: "dahira-kenal",
+			storageBucket: "dahira-kenal.firebasestorage.app",
+			messagingSenderId: "363618938352",
+			appId: "1:363618938352:web:307a7e87a9571cf08d4135",
+			measurementId: "G-MD6F2PKZZY"
+		};
+		firebase.initializeApp(firebaseConfig);
+		const auth = firebase.auth();
+		const db = firebase.database();
+
+		let isLogin = true;
+
+		const title = document.getElementById('auth-title');
+		const btnAuth = document.getElementById('btn-auth');
+		const btnToggle = document.getElementById('btn-toggle');
+		const registerFields = document.getElementById('register-fields');
+		const err = document.getElementById('auth-error');
+		const emailInput = document.getElementById('email');
+		const passwordInput = document.getElementById('password');
+		const nameInput = document.getElementById('name');
+		const roleInput = document.getElementById('role');
+
+		function showError(msg) {
+			err.textContent = '⚠️ ' + msg;
+			err.style.display = 'block';
+		}
+
+		function hideError() {
+			err.style.display = 'none';
+		}
+
+		function toggleMode() {
+			isLogin = !isLogin;
+			if (isLogin) {
+				title.textContent = 'Connexion';
+				btnAuth.textContent = 'Se connecter';
+				btnToggle.textContent = 'Créer un compte';
+				registerFields.style.display = 'none';
+			} else {
+				title.textContent = 'Inscription';
+				btnAuth.textContent = 'Créer un compte';
+				btnToggle.textContent = 'Se connecter';
+				registerFields.style.display = 'block';
+			}
+			hideError();
+		}
+
+		btnToggle.addEventListener('click', toggleMode);
+
+		btnAuth.addEventListener('click', async function() {
+			const email = emailInput.value.trim();
+			const password = passwordInput.value;
+			if (!email || !password) {
+				showError('Veuillez remplir tous les champs');
+				return;
+			}
+			try {
+				if (isLogin) {
+					await auth.signInWithEmailAndPassword(email, password);
+					// Redirect on success
+					window.location.href = 'versionfinal.html';
+				} else {
+					const name = nameInput.value.trim();
+					const role = roleInput.value;
+					if (!name) {
+						showError('Veuillez entrer votre nom');
+						return;
+					}
+					const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+					const uid = userCredential.user.uid;
+					// Save to DB
+					await db.ref('users/' + uid).set({
+						name: name,
+						role: role,
+						email: email,
+						createdAt: new Date().toISOString()
+					});
+					showError('Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
+					toggleMode(); // Switch to login
+				}
+			} catch (error) {
+				showError(error.message);
+			}
+		});
+
+		// Submit on Enter
+		[emailInput, passwordInput, nameInput].forEach(i => i.addEventListener('keydown', function(e) {
+			if (e.key === 'Enter') btnAuth.click();
+		}));
+
+		// Autofocus email
+		emailInput.focus();
+	</script>
+</body>
+	<footer style="background: linear-gradient(135deg, #1f2937 0%, #374151 100%); color: white; padding: 1.25rem 0; text-align: center; position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000;">
+		<p style="margin: 0; font-size: 0.95rem; font-weight: 500;">© Copyright 2026. Made by ABDOULAHI DIALLO</p>
+		<p style="margin: 0.4rem 0 0 0; font-size: 0.825rem; opacity: 0.85;">Systeme de Gestion DKST reserver au membre de la Finance</p>
+	</footer>
+</html>
