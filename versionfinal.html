@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dahira - Systéme de Gestion (Optimisé)</title>
+    <link rel="stylesheet" href="fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="header">
+        <h1>🕌 Dahira Kenal</h1>
+        <p>Système de Gestion des Membres et Cotisations DKST</p>
+    </div>
+
+    <button id="mobile-menu-toggle" class="mobile-menu-btn" aria-label="Menu" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+    </button>
+
+    <div class="tabs" id="tabs-menu">
+        <button class="tab active" onclick="showTab('membres', event)">👥 Membres</button>
+        <button class="tab" onclick="showTab('dashboard', event)">📊 Dashboard</button>
+        <button class="tab" onclick="showTab('paiements', event)">💰 Cotisations</button>
+        <button class="tab" onclick="showTab('stats', event)">📈 Statistiques</button>
+        <button class="tab" onclick="showTab('rapports', event)">📄 Rapports</button>
+        <button class="tab" onclick="showTab('depenses', event)">💸 Dépenses</button>
+        <button class="tab" onclick="showTab('evenements', event)">📅 Événements</button>
+        <button class="tab" onclick="showTab('carte', event)">💳 Carte</button>
+        <button class="tab" onclick="showTab('calculateur', event)">🧮 Calculateur</button>
+        <button class="tab" onclick="showTab('historique', event)">📜 Historique</button>
+        <button class="tab" onclick="showTab('parametre', event)">⚙️ Paramètres</button>
+    </div>
+
+    <div class="container">
+    
+
+
+        <div id="tab-membres" class="tab-content active">
+            <div class="header-actions">
+                <h2>Liste des Membres (<span id="membre-count">0</span>)</h2>
+                <button class="btn-primary" onclick="openModal('addMember')">+ Nouveau Membre</button>
+            </div>
+            <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                <input type="text" id="search-input" placeholder="Rechercher..." class="form-input"
+                    style="flex: 1; min-width: 200px;">
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="filter-ok" checked> À jour
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="filter-late" checked> En retard
+                </label>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <span style="font-weight: 500; color: #374151;">Sexe:</span>
+                    <label style="display: flex; align-items: center; gap: 0.25rem;">
+                        <input type="radio" name="filter-sexe" value="" checked> Tous
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.25rem;">
+                        <input type="radio" name="filter-sexe" value="M"> Hommes
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.25rem;">
+                        <input type="radio" name="filter-sexe" value="F"> Femmes
+                    </label>
+                </div>
+            </div>
+            <div id="membres-list"></div>
+        </div>
+
+
+        <!-- ONGLET DASHBOARD -->
+        <div id="tab-dashboard" class="tab-content">
+            <h2 style="margin-bottom: 2rem;">📊 Dashboard - Vue d'ensemble</h2>
+
+            <!-- Bouton Relance -->
+            <div style="margin-bottom: 1.5rem; text-align: right;">
+                <button class="btn-primary" onclick="generateBulkReminder()">📢 Relancer les retardataires
+                    (WhatsApp)</button>
+            </div>
+
+            <!-- Zone d'affichage de la relanche -->
+            <div id="bulk-reminder-area" style="display:none;" class="reminder-box">
+                <h3>📋 Message de Relance Copier-Coller</h3>
+                <p style="font-size: 0.9rem; color: #666;">Copiez ce texte et collez-le dans votre groupe WhatsApp.</p>
+                <textarea id="reminder-text" class="reminder-textarea" readonly></textarea>
+                <div style="margin-top: 0.5rem;">
+                    <button class="btn-primary" onclick="copyToClipboard()">📋 Copier le texte</button>
+                    <button class="btn-secondary"
+                        onclick="document.getElementById('bulk-reminder-area').style.display='none'">Fermer</button>
+                </div>
+            </div>
+
+            <!-- Métriques principales -->
+            <div class="dashboard-metrics"
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="metric-card"
+                    style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <h3 style="margin-bottom: 0.5rem; font-size: 0.9rem; opacity: 0.9;">Total Membres</h3>
+                    <p style="font-size: 2rem; font-weight: bold; margin: 0;" id="dashboard-total-membres">0</p>
+                    <div style="margin-top: 0.5rem; font-size: 0.8rem; opacity: 0.8;">
+                        <span id="dashboard-nouveaux-membres">0</span> nouveaux ce mois
+                    </div>
+                </div>
+                <div class="metric-card"
+                    style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <h3 style="margin-bottom: 0.5rem; font-size: 0.9rem; opacity: 0.9;">Cotisations du Mois</h3>
+                    <p style="font-size: 2rem; font-weight: bold; margin: 0;" id="dashboard-cotisations-mois">0 FCFA</p>
+                    <div style="margin-top: 0.5rem; font-size: 0.8rem; opacity: 0.8;">
+                        <span id="dashboard-cotisations-annee">0</span> FCFA cette année
+                    </div>
+                </div>
+                <div class="metric-card"
+                    style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <h3 style="margin-bottom: 0.5rem; font-size: 0.9rem; opacity: 0.9;">Dépenses du Mois</h3>
+                    <p style="font-size: 2rem; font-weight: bold; margin: 0;" id="dashboard-depenses-mois">0 FCFA</p>
+                    <div style="margin-top: 0.5rem; font-size: 0.8rem; opacity: 0.8;">
+                        <span id="dashboard-ratio-depenses">0</span>% du budget
+                    </div>
+                </div>
+                <div class="metric-card"
+                    style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 1.5rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <h3 style="margin-bottom: 0.5rem; font-size: 0.9rem; opacity: 0.9;">Solde</h3>
+                    <p style="font-size: 2rem; font-weight: bold; margin: 0;" id="dashboard-solde">0 FCFA</p>
+                    <div style="margin-top: 0.5rem; font-size: 0.8rem; opacity: 0.8;">
+                        <span id="dashboard-solde-trend" style="color: #10b981;">↗️ +0%</span> vs mois dernier
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPIs supplémentaires -->
+            <div class="dashboard-kpis"
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                <div class="kpi-card"
+                    style="background: white; padding: 1.25rem; border-radius: 0.75rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); border-left: 4px solid #059669;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <p style="font-size: 0.8rem; color: #6b7280; margin: 0;">Taux des ADIYA</p>
+                            <p style="font-size: 1.5rem; font-weight: bold; color: #059669; margin: 0;"
+                                id="kpi-taux-paiement">0%</p>
+                        </div>
+                        <div style="font-size: 2rem;">📊</div>
+                    </div>
+                    <div style="margin-top: 0.5rem;">
+                        <span style="font-size: 0.75rem; color: #059669;" id="kpi-membres-ajour">0</span> membres à jour
+                    </div>
+                </div>
+
+                <div class="kpi-card"
+                    style="background: white; padding: 1.25rem; border-radius: 0.75rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); border-left: 4px solid #3b82f6;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <p style="font-size: 0.8rem; color: #6b7280; margin: 0;">Moyenne/Membre</p>
+                            <p style="font-size: 1.5rem; font-weight: bold; color: #3b82f6; margin: 0;"
+                                id="kpi-moyenne-membre">0 FCFA</p>
+                        </div>
+                        <div style="font-size: 2rem;">👥</div>
+                    </div>
+                    <div style="margin-top: 0.5rem;">
+                        <span style="font-size: 0.75rem; color: #3b82f6;">Cotisation moyenne</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card"
+                    style="background: white; padding: 1.25rem; border-radius: 0.75rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); border-left: 4px solid #f59e0b;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <p style="font-size: 0.8rem; color: #6b7280; margin: 0;">Croissance</p>
+                            <p style="font-size: 1.5rem; font-weight: bold; color: #f59e0b; margin: 0;"
+                                id="kpi-croissance">+0%</p>
+                        </div>
+                        <div style="font-size: 2rem;">📈</div>
+                    </div>
+                    <div style="margin-top: 0.5rem;">
+                        <span style="font-size: 0.75rem; color: #f59e0b;">Nouveaux membres</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card"
+                    style="background: white; padding: 1.25rem; border-radius: 0.75rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); border-left: 4px solid #7c3aed;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <p style="font-size: 0.8rem; color: #6b7280; margin: 0;">Activité</p>
+                            <p style="font-size: 1.5rem; font-weight: bold; color: #7c3aed; margin: 0;"
+                                id="kpi-activite">0%</p>
+                        </div>
+                        <div style="font-size: 2rem;">⚡</div>
+                    </div>
+                    <div style="margin-top: 0.5rem;">
+                        <span style="font-size: 0.75rem; color: #7c3aed;">Membres actifs</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card"
+                    style="background: white; padding: 1.25rem; border-radius: 0.75rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); border-left: 4px solid #ec4899;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <p style="font-size: 0.8rem; color: #6b7280; margin: 0;">Équilibre</p>
+                            <p style="font-size: 1.5rem; font-weight: bold; color: #ec4899; margin: 0;"
+                                id="kpi-equilibre">0%</p>
+                        </div>
+                        <div style="font-size: 2rem;">⚖️</div>
+                    </div>
+                    <div style="margin-top: 0.5rem;">
+                        <span style="font-size: 0.75rem; color: #ec4899;">Ratio Dép./Rec.</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card"
+                    style="background: white; padding: 1.25rem; border-radius: 0.75rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); border-left: 4px solid #059669;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <p style="font-size: 0.8rem; color: #6b7280; margin: 0;">Performance</p>
+                            <p style="font-size: 1.5rem; font-weight: bold; color: #059669; margin: 0;"
+                                id="kpi-performance">0%</p>
+                        </div>
+                        <div style="font-size: 2rem;">🎯</div>
+                    </div>
+                    <div style="margin-top: 0.5rem;">
+                        <span style="font-size: 0.75rem; color: #059669;">Objectif mensuel</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graphiques -->
+            <div class="dashboard-charts"
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+
+                <!-- Répartition par sexe -->
+                <div class="chart-card"
+                    style="background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <h3 style="margin-bottom: 1.5rem; color: #1f2937;">Répartition par Sexe</h3>
+                    <canvas id="chart-sexe" width="300" height="300"></canvas>
+                </div>
+
+                <!-- Évolution des membres -->
+                <div class="chart-card"
+                    style="background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <h3 style="margin-bottom: 1.5rem; color: #1f2937;">Évolution des Membres</h3>
+                    <canvas id="chart-evolution" width="300" height="300"></canvas>
+                </div>
+
+                <!-- Paiements par caisse -->
+                <div class="chart-card"
+                    style="background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <h3 style="margin-bottom: 1.5rem; color: #1f2937;">ADIYA par Caisse (6 derniers mois)</h3>
+                    <canvas id="chart-paiements-caisse" width="300" height="300"></canvas>
+                </div>
+
+                <!-- Statut des paiements -->
+                <div class="chart-card"
+                    style="background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <h3 style="margin-bottom: 1.5rem; color: #1f2937;">Statut des ADIYA</h3>
+                    <canvas id="chart-statut-paiements" width="300" height="300"></canvas>
+                </div>
+
+                <!-- Dépenses par caisse -->
+                <div class="chart-card"
+                    style="background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <h3 style="margin-bottom: 1.5rem; color: #1f2937;">Dépenses par Caisse (6 derniers mois)</h3>
+                    <canvas id="chart-depenses-caisse" width="300" height="300"></canvas>
+                </div>
+
+                <!-- Top contributeurs -->
+                <div class="chart-card"
+                    style="background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <h3 style="margin-bottom: 1.5rem; color: #1f2937;">Top 5 Contributeurs</h3>
+                    <canvas id="chart-top-contributeurs" width="300" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="tab-paiements" class="tab-content">
+            <div class="header-actions">
+                <h2>Historique des ADIYA (<span id="payment-count">0</span>)</h2>
+            </div>
+            <div style="margin-bottom:1rem; display:flex; gap:0.5rem; align-items:center;">
+                <input type="text" id="payments-search-input" placeholder="Rechercher (nom, méthode, type, montant)..." class="form-input" style="flex:1; min-width:200px;" />
+                <button class="btn-secondary" onclick="document.getElementById('payments-search-input').value=''; renderPayments();">✖️ Effacer</button>
+            </div>
+            <div class="payment-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Membre</th>
+                            <th>Type</th>
+                            <th>Méthode</th>
+                            <th style="text-align: right;">Montant</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payments-list"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-depenses" class="tab-content">
+            <div class="header-actions">
+                <h2>Dépenses (<span id="expense-count">0</span>)</h2>
+                <button class="btn-primary" onclick="openExpenseModal()">+ Nouvelle Dépense</button>
+            </div>
+            <div class="payment-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Libellé</th>
+                            <th>Caisse</th>
+                            <th style="text-align: right;">Montant</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expenses-list"></tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <div id="tab-stats" class="tab-content">
+            <h2 style="margin-bottom: 1.5rem;">Statistiques Globales</h2>
+            <div class="stats-cards">
+                <div class="stats-card">
+                    <h3>Caisse Hebdomadaire</h3>
+                    <p class="big-number" id="total-hebdo">0</p>
+                    <p style="opacity: 0.8;">FCFA</p>
+                    <p style="margin-top:0.5rem; font-size:0.9rem; color:#b91c1c;">Dépenses: <span
+                            id="expense-hebdo">0</span> FCFA</p>
+                </div>
+                <div class="stats-card" style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);">
+                    <h3>Caisse Mensuelle</h3>
+                    <p class="big-number" id="total-mensuel">0</p>
+                    <p style="opacity: 0.8;">FCFA</p>
+                    <p style="margin-top:0.5rem; font-size:0.9rem; color:#b91c1c;">Dépenses: <span
+                            id="expense-mensuel">0</span> FCFA</p>
+                </div>
+                <div class="stats-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <h3>Caisse Sociale</h3>
+                    <p class="big-number" id="total-social">0</p>
+                    <p style="opacity: 0.8;">FCFA</p>
+                    <p style="margin-top:0.5rem; font-size:0.9rem; color:#b91c1c;">Dépenses: <span
+                            id="expense-social">0</span> FCFA</p>
+                </div>
+                <div class="stats-card" style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);">
+                    <h3>Caisse Diayante</h3>
+                    <p class="big-number" id="total-diayante">0</p>
+                    <p style="opacity: 0.8;">FCFA</p>
+                    <p style="margin-top:0.5rem; font-size:0.9rem; color:#b91c1c;">Dépenses: <span
+                            id="expense-diayante">0</span> FCFA</p>
+                </div>
+                <div class="stats-card" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                    <h3>Total Dépenses</h3>
+                    <p class="big-number" id="total-expenses">0</p>
+                    <p style="opacity: 0.8;">FCFA</p>
+                </div>
+                <div class="stats-card" style="background: linear-gradient(135deg, #374151 0%, #1f2937 100%);">
+                    <h3>Total Global</h3>
+                    <p class="big-number" id="total-global">0</p>
+                    <p style="opacity: 0.8;">FCFA</p>
+                </div>
+            </div>
+            <div id="stats-details"></div>
+        </div>
+
+
+        <div id="tab-rapports" class="tab-content">
+            <h2 style="margin-bottom: 1.5rem;">Rapports et Comptes Rendus</h2>
+
+            <div class="member-card">
+                <h3 style="margin-bottom: 1rem;">Période du Rapport</h3>
+                <div
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Date de début</label>
+                        <input type="date" id="rapport-start" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Date de fin</label>
+                        <input type="date" id="rapport-end" class="form-input">
+                    </div>
+                </div>
+                <!-- choix du genre pour les rapports (Tous / Hommes / Femmes) -->
+                <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <label class="form-label" style="margin:0;">Genre :</label>
+                    <select id="rapport-gender" class="form-select" style="max-width:200px;">
+                        <option value="">Tous</option>
+                        <option value="M">Hommes</option>
+                        <option value="F">Femmes</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn-primary" onclick="generateRapportCaisses()">💰 Rapport Caisses</button>
+                    <button class="btn-primary" onclick="generateRapportHebdo()">📄 Rapport Hebdomadaire</button>
+                    <button class="btn-primary" onclick="generateRapportMensuel()">📄 Rapport Mensuel</button>
+                    <button class="btn-primary" onclick="generateRapportSocial()">📄 Rapport Social</button>
+                    <button class="btn-primary" onclick="generateRapportDiayante()">📄 Rapport Diayante</button>
+                    <button class="btn-primary" onclick="generateRapportDepenses()">📄 Rapport Dépenses</button>
+                    <button class="btn-primary" onclick="generateRapportGlobal()">📄 Rapport Global</button>
+                    <button class="btn-primary" onclick="generateRapportHommes()">👨 Rapport Hommes</button>
+                    <button class="btn-primary" onclick="generateRapportFemmes()">👩 Rapport Femmes</button>
+                    <button class="btn-primary" onclick="generateRapportTousMembres()">👥 Rapport Tous Membres</button>
+                </div>
+                <div id="event-reports-buttons" style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;"></div>
+            </div>
+
+            <div id="rapport-preview" style="display: none;" class="member-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3>Aperçu du Rapport</h3>
+                    <button class="btn-primary" data-print="rapport" data-print-id="rapport-preview" onclick="printRapport()">🖨️ Imprimer</button>
+                </div>
+                <div id="rapport-content"></div>
+            </div>
+        </div>
+
+
+        <div id="tab-calculateur" class="tab-content">
+            <h2 style="margin-bottom: 2rem;">Calculateur de Cotisations</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+                <div class="member-card">
+                    <h3 style="margin-bottom: 1rem;">Calculateur Individuel</h3>
+                    <div class="form-group">
+                        <label class="form-label">Membre</label>
+                        <select id="calc-member" class="form-select" onchange="calculateIndividual()">
+                            <option value="">Sélectionner...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Période (mois)</label>
+                        <input type="number" id="calc-period" class="form-input" value="1" min="1"
+                            onchange="calculateIndividual()">
+                    </div>
+                    <div id="calc-result"
+                        style="background: #f0fdf4; padding: 1rem; border-radius: 0.5rem; margin-top: 1rem;"></div>
+                </div>
+                <div class="member-card">
+                    <h3 style="margin-bottom: 1rem;">Calculateur Global</h3>
+                    <div class="form-group">
+                        <label class="form-label">Nombre de membres</label>
+                        <input type="number" id="calc-total" class="form-input" value="" min="1"
+                            onchange="calculateGlobal()">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Type de caisse</label>
+                        <select id="calc-type-global" class="form-select" onchange="calculateGlobal()">
+                            <!-- options remplis dynamiquement -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Période (mois)</label>
+                        <input type="number" id="calc-global-period" class="form-input" value="1" min="1"
+                            onchange="calculateGlobal()">
+                    </div>
+                    <div id="calc-global-result"
+                        style="background: #f0fdf4; padding: 1rem; border-radius: 0.5rem; margin-top: 1rem;"></div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ONGLET CARTE -->
+        <div id="tab-carte" class="tab-content">
+            <h2 style="margin-bottom: 2rem;">Cartes de Membre</h2>
+
+            <!-- Barre de recherche -->
+            <div class="search-container" style="margin-bottom: 2rem;">
+                <div class="form-group" style="max-width: 400px;">
+                    <label class="form-label">🔍 Rechercher un membre</label>
+                    <input type="text" id="carte-search-input" class="form-input"
+                        placeholder="Tapez le nom ou prénom..." style="padding: 0.75rem 1rem;">
+                </div>
+            </div>
+
+            <div id="carte-list" class="member-card-container">
+                <!-- Les cartes seront générées ici -->
+            </div>
+
+        </div>
+        <!-- ONGLET ÉVÉNEMENTS -->
+        <div id="tab-evenements" class="tab-content">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                <h2>Gestion des Événements</h2>
+                <button class="btn-primary" onclick="eventsModule.openModal()">➕ Nouvel Événement</button>
+            </div>
+
+            <div id="events-container">
+                <!-- Les cartes s'afficheront ici automatiquement -->
+            </div>
+        </div>
+
+        <!-- ONGLET HISTORIQUE -->
+    
+        <div id="tab-historique" class="tab-content">
+            <h2>📜 Historique des actions</h2>
+            <div class="history-controls no-print" style="display:flex; flex-direction:column; gap:0.5rem;">
+                <button class="btn-export" id="btn-export" onclick="exportData()">📥 Export</button>
+                <button class="btn-import" id="btn-import" onclick="document.getElementById('import-file').click()">📤 Importer</button>
+                <!-- authentication and cloud sync buttons removed; storage will be handled by backend -->
+                <button class="btn-secondary" id="btn-theme" onclick="toggleDarkMode()">🌙 Mode Sombre</button>
+                <div id="sync-status" class="sync-status idle" style="margin-left:0.5rem;">⏺️ Idle</div>
+                <input type="file" id="import-file" accept=".json" onchange="importData(event)" style="display: none;">
+            </div>
+            <div id="history-list" style="margin-top:1rem; max-height:60vh; overflow:auto;"></div>
+        </div>
+
+        <!-- ONGLET PARAMÈTRES -->
+        <div id="tab-parametre" class="tab-content">
+            <h2>⚙️ Paramètres des caisses</h2>
+            <div class="member-card" style="max-width:600px;">
+                <table style="width:100%; border-collapse: collapse; text-align:left;">
+                    <thead>
+                        <tr>
+                            <th>Caisse</th>
+                            <th>Hommes</th>
+                            <th>Femmes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Hebdomadaire</td>
+                            <td><input type="number" id="param-hebdomadaire-M" class="form-input" /></td>
+                            <td><input type="number" id="param-hebdomadaire-F" class="form-input" /></td>
+                        </tr>
+                        <tr>
+                            <td>Mensuelle</td>
+                            <td><input type="number" id="param-mensuelle-M" class="form-input" /></td>
+                            <td><input type="number" id="param-mensuelle-F" class="form-input" /></td>
+                        </tr>
+                        <tr>
+                            <td>Sociale</td>
+                            <td><input type="number" id="param-social-M" class="form-input" /></td>
+                            <td><input type="number" id="param-social-F" class="form-input" /></td>
+                        </tr>
+                        <tr>
+                            <td>Diayante</td>
+                            <td><input type="number" id="param-diayante-M" class="form-input" /></td>
+                            <td><input type="number" id="param-diayante-F" class="form-input" /></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="margin-top:1rem; text-align:right;">
+                    <button class="btn-primary" onclick="saveParameters()">Enregistrer</button>
+                </div>
+            </div>
+
+            <!-- Boutons Cloud/Firebase -->
+            <div class="member-card" style="margin-top: 2rem;">
+                <h3 style="margin-bottom: 1rem;">☁️ Synchronisation Cloud</h3>
+                <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 1.5rem;">Sauvegardez et synchronisez vos données avec le cloud Firebase</p>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn-primary" onclick="connectToCloud()" style="background-color: #8b5cf6;">🔐 Connexion aux Données</button>
+                    <button class="btn-primary" onclick="syncToCloud()" style="background-color: #06b6d4;">☁️ Sync vers le Cloud</button>
+                    <button class="btn-primary" onclick="importFromCloud()" style="background-color: #ec4899;">⬇️ Importer depuis le Cloud</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="modal-membre" class="modal" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-membre-title">Nouveau Membre</h3>
+                <button class="btn-close" onclick="closeModal('modal-membre')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Nom</label>
+                    <input type="text" id="membre-nom" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Prénom</label>
+                    <input type="text" id="membre-prenom" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Sexe</label>
+                    <select id="membre-sexe" class="form-select">
+                        <option value="M">Masculin</option>
+                        <option value="F">Féminin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Téléphone <small
+                            style="color: #6b7280; font-weight: normal;">(facultatif)</small></label>
+                    <input type="tel" id="membre-tel" class="form-input" placeholder="77 123 45 67" maxlength="15" inputmode="numeric">
+                    <small id="membre-tel-error" class="field-error" style="display:none;"></small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email <small
+                            style="color: #6b7280; font-weight: normal;">(facultatif)</small></label>
+                    <input type="email" id="membre-email" class="form-input" placeholder="exemple@mail.com" inputmode="email">
+                    <small id="membre-email-error" class="field-error" style="display:none;"></small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date d'adhésion</label>
+                    <input type="date" id="membre-date" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Photo (facultatif)</label>
+                    <input type="file" id="membre-photo" accept="image/*" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Catégorie d'âge</label>
+                    <select id="membre-categorie-age" class="form-select">
+                        <option value="enfant">Enfant</option>
+                        <option value="adulte" selected>Adulte</option>
+                        <option value="3eme-age">3ème âge</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Rôles dans le Dahira <small style="color: #6b7280; font-weight: normal;">(cochez tous ceux qui s'appliquent)</small></label>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" id="role-simple" value="membre-simple" style="margin-right: 0.5rem; width: 18px; height: 18px; cursor: pointer;">
+                            <span>Membre Simple</span>
+                        </label>
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" id="role-finance" value="membre-finance" style="margin-right: 0.5rem; width: 18px; height: 18px; cursor: pointer;">
+                            <span>Membre Finance</span>
+                        </label>
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" id="role-bureau" value="membre-bureau" style="margin-right: 0.5rem; width: 18px; height: 18px; cursor: pointer;">
+                            <span>Membre Bureau</span>
+                        </label>
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" id="role-audiovisuel" value="membre-audiovisuel" style="margin-right: 0.5rem; width: 18px; height: 18px; cursor: pointer;">
+                            <span>Membre Audio-Visuel</span>
+                        </label>
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" id="role-culturel" value="membre-culturel" style="margin-right: 0.5rem; width: 18px; height: 18px; cursor: pointer;">
+                            <span>Membre Culturel</span>
+                        </label>
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" id="role-kourel" value="membre-kourel" style="margin-right: 0.5rem; width: 18px; height: 18px; cursor: pointer;">
+                            <span>Membre Kourel</span>
+                        </label>
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" id="role-organisation" value="membre-organisation" style="margin-right: 0.5rem; width: 18px; height: 18px; cursor: pointer;">
+                            <span>Membre Organisation</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn-primary" style="flex: 1;" onclick="saveMembre()">Enregistrer</button>
+                    <button class="btn-secondary" onclick="closeModal('modal-membre')">Annuler</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- auth modal removed; authentication is disabled and will be handled by backend if needed -->
+
+
+    <div id="modal-paiement" class="modal" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Ajouter un ADIYA</h3>
+                <button class="btn-close" onclick="closeModal('modal-paiement')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Type de caisse</label>
+                    <select id="payment-type" class="form-select" onchange="updatePaymentAmount()">
+                        <option value="hebdomadaire">Hebdomadaire</option>
+                        <option value="mensuelle">Mensuelle</option>
+                        <option value="social">Caisse sociale</option>
+                        <option value="diayante">Diayante</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Montant (FCFA)</label>
+                    <input type="number" id="payment-montant" class="form-input" value="">
+                    <small id="payment-montant-error" class="field-error" style="display:none;"></small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="date" id="payment-date" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Méthode de paiement</label>
+                    <select id="payment-methode" class="form-select">
+                        <option value="espèces">Espèces</option>
+                        <option value="wave">Wave</option>
+                        <option value="orange-money">Orange Money</option>
+                    </select>
+                </div>
+                <button class="btn-primary" style="flex: 1;" onclick="savePayment()">Enregistrer</button>
+                <button class="btn-secondary" onclick="closeModal('modal-paiement')">Annuler</button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div id="modal-depense" class="modal" aria-modal="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Nouvelle Dépense</h3>
+                <button class="btn-close" onclick="closeModal('modal-depense')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Libellé</label>
+                    <input type="text" id="expense-label" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Montant (FCFA)</label>
+                    <input type="number" id="expense-montant" class="form-input" value="0">
+                    <small id="expense-montant-error" class="field-error" style="display:none;"></small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Caisse</label>
+                    <select id="expense-caisse" class="form-select">
+                        <option value="hebdomadaire">Hebdomadaire</option>
+                        <option value="mensuelle">Mensuelle</option>
+                        <option value="social">Sociale</option>
+                        <option value="diayante">Diayante</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="date" id="expense-date" class="form-input">
+                </div>
+                <div class="form-actions">
+                    <button class="btn-primary" style="flex: 1;" onclick="saveExpense()">Enregistrer</button>
+                    <button class="btn-secondary" onclick="closeModal('modal-depense')">Annuler</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="print-area" class="print-area" style="display: none;"></div>
+
+
+    <footer
+        style="background: linear-gradient(135deg, #1f2937 0%, #374151 100%); color: white; padding: 2rem 0; margin-top: 3rem; text-align: center;">
+        <p style="margin: 0; font-size: 1rem; font-weight: 500;">© Copyright 2026 . Made by ABDOULAHI DIALLO</p>
+        <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; opacity: 0.8;"> Pour toute demande de modification,
+            veuillez me contacter</p>
+        <a href="https://wa.me/221761808410?text=As-salamou aleykoum, j'ai une demande de modification pour l'application"
+            target="_blank"
+            style="display: inline-flex; align-items:center; gap:0.5rem; margin-top: 1rem; padding: 0.75rem 1.5rem; background: #25d366; color: white; text-decoration: none; border-radius: 0.5rem; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.3s;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" style="width:1.2em; height:1.2em;" />
+            Contactez via WhatsApp
+        </a>
+    </footer>
+
+
+    <!-- Firebase configuration is fetched from the server in script.js -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="script.js"></script>
+
+    <script>
+        // Diagnostic rapide: vérifie que les handlers utilisés par les boutons sont définis
+        (function checkHandlers(){
+            const handlers = [
+                'toggleMobileMenu','showTab','openModal','saveMembre','openExpenseModal',
+                'generateBulkReminder','copyToClipboard','generateRapportCaisses','generateRapportHebdo','generateRapportMensuel',
+                'generateRapportSocial','generateRapportDiayante','generateRapportDepenses','generateRapportGlobal',
+                'exportData','importData','uploadMemberPhoto','deleteMemberPhoto'
+            ];
+            const missing = handlers.filter(h => typeof window[h] !== 'function');
+            if (missing.length === 0) {
+                console.info('Diagnostics boutons: tous les handlers sont présents');
+                return;
+            }
+            console.warn('Diagnostics boutons: handlers manquants ->', missing);
+            // Afficher une bannière visible en haut
+            const banner = document.createElement('div');
+            banner.style.position = 'fixed';
+            banner.style.top = '0';
+            banner.style.left = '0';
+            banner.style.right = '0';
+            banner.style.zIndex = '9999';
+            banner.style.background = '#ffedd5';
+            banner.style.color = '#7c2d12';
+            banner.style.padding = '0.5rem 1rem';
+            banner.style.fontWeight = '600';
+            banner.textContent = 'Handlers manquants: ' + missing.join(', ');
+            document.body.appendChild(banner);
+        })();
+    </script>
+
+
+
+            <div id="card-modal" class="card-modal" aria-modal="true">
+        <div class="card-modal-content">
+            <button class="card-modal-close" onclick="closeCardModal()">×</button>
+            <div id="card-modal-body"></div>
+        </div>
+    </div>
+    <!-- MODALE ÉVÉNEMENTS -->
+    <div id="evt-modal">
+        <div class="evt-modal-content">
+            <h3 style="margin-bottom:1rem; color:#059669;">Éditeur d'Événement</h3>
+            <input type="hidden" id="evt-id">
+            <div class="evt-form-group">
+                <label style="font-weight:bold; display:block; margin-bottom:0.5rem;">Titre</label>
+                <input type="text" id="evt-title" class="evt-input" placeholder="Ex: Magal, Rencontre...">
+            </div>
+            <div class="evt-form-group">
+                <label style="font-weight:bold; display:block; margin-bottom:0.5rem;">Date</label>
+                <input type="date" id="evt-date" class="evt-input">
+            </div>
+            <div class="evt-form-group">
+                <label style="font-weight:bold; display:block; margin-bottom:0.5rem;">Description</label>
+                <textarea id="evt-desc" class="evt-input" rows="3"></textarea>
+            </div>
+            <div class="evt-form-group">
+                <label style="font-weight:bold; display:block; margin-bottom:0.5rem;">Cotisation (FCFA)</label>
+                <input type="number" id="evt-fee" class="evt-input" placeholder="0" value="0">
+            </div>
+            <button class="evt-btn-primary" onclick="eventsModule.save()">Enregistrer</button>
+            <button class="btn-secondary" style="width:100%; margin-top:0.5rem;"
+                onclick="eventsModule.closeModal()">Annuler</button>
+        </div>
+    </div>
+
+    <!-- MODALE CONNEXION FIREBASE -->
+    <div id="modal-firebase-login" class="modal" aria-modal="true">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>🔐 Connexion Firebase</h3>
+                <button class="btn-close" onclick="closeModal('modal-firebase-login')">×</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem;">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="firebase-email" class="form-input" placeholder="votre@email.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Mot de passe</label>
+                    <input type="password" id="firebase-password" class="form-input" placeholder="••••••••">
+                </div>
+                <div id="firebase-error" style="color: #dc2626; font-size: 0.9rem; margin-bottom: 1rem; display: none;"></div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn-secondary" style="flex: 1;" onclick="closeModal('modal-firebase-login')">Annuler</button>
+                    <button class="btn-secondary" style="flex: 1;" onclick="signOutFirebase()">Déconnexion</button>
+                    <button class="btn-primary" style="flex: 1;" onclick="authenticateAndImport()">Se connecter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
